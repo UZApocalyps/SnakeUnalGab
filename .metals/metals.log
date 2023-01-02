@@ -1,0 +1,17 @@
+2023.01.02 22:41:32 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/uzapocalyps/scala/SnakeUnalGab/.metals/lsp.trace.json or /home/uzapocalyps/.cache/metals/lsp.trace.json[0m
+2023.01.02 22:41:33 INFO  logging to file /home/uzapocalyps/scala/SnakeUnalGab/.metals/metals.log[0m
+2023.01.02 22:41:33 INFO  Started: Metals version 0.11.10 in workspace '/home/uzapocalyps/scala/SnakeUnalGab' for client Visual Studio Code 1.74.2.[0m
+SLF4J: No SLF4J providers were found.
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See https://www.slf4j.org/codes.html#noProviders for further details.
+SLF4J: Class path contains SLF4J bindings targeting slf4j-api versions 1.7.x or earlier.
+SLF4J: Ignoring binding found at [jar:file:/home/uzapocalyps/.cache/coursier/v1/https/repo1.maven.org/maven2/com/outr/scribe-slf4j_2.13/3.10.5/scribe-slf4j_2.13-3.10.5.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See https://www.slf4j.org/codes.html#ignoredBindings for an explanation.
+2023.01.02 22:41:34 INFO  time: initialize in 1.19s[0m
+2023.01.02 22:41:35 WARN  Build server is not auto-connectable.[0m
+2023.01.02 22:41:35 WARN  no build tool detected in workspace '/home/uzapocalyps/scala/SnakeUnalGab'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. [0m
+2023.01.02 22:41:57 INFO  [0m
+2023.01.02 22:41:57 INFO  Template applied in /home/uzapocalyps/scala/SnakeUnalGab/./snake[0m
+2023.01.02 22:41:57 INFO  [0m
+2023.01.02 22:41:57 INFO  time: ran 'giter8.Giter8' in 4.92s[0m
+2023.01.02 22:42:03 INFO  shutting down Metals[0m
