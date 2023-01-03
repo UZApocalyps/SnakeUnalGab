@@ -32,6 +32,16 @@ object Main extends App {
 
   private def start(): Unit = {
     // définir un point de départ random du serpent
+    
+    val random = new Random()
+
+    // Choose a random row and column index for the starting position
+    val startRow = random.nextInt(grid.length)
+    val startCol = random.nextInt(grid(0).length)
+
+    // Set the starting position of the snake to the randomly chosen row and column
+    val startPos = (startRow, startCol)
+    
   }
 
   private def stop(): Unit = {
