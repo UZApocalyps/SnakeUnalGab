@@ -14,6 +14,21 @@ object Main extends App {
   // Faire une grille qui sépare l'écran en case d
   // chaque case est un carré de 10 pixels par 10 pixels
   // chaque case est un objet de la classe cell
+  
+    
+  // Define the size of the grid (number of rows and columns)
+  val rows : Int = f.width / 10
+  val cols : Int = f.height / 10
+
+  // Create a 2 dimension array of Cell objects
+  val grid = Array.ofDim[Cell](rows,cols)
+
+  // Initialize the grid by creating a Cell object for each array index
+  for (i <- 0 until rows) {
+    for (j <- 0 until cols) {
+      grid(i)(j) = new Cell(i, j)
+    }
+  }
 
   private def start(): Unit = {
     // définir un point de départ random du serpent
