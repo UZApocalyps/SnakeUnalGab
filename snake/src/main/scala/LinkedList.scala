@@ -1,4 +1,3 @@
-package linkedList
 class LinkedList {
   val nodes: List[Node] = List()
   val head: Node = null
