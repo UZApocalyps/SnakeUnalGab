@@ -4,6 +4,7 @@ import scala.util.Random
 import java.awt.Color
 object Main extends App {
   val direction = "I" // I = idle, L = gauche, D = bas, R = droit, U = haut
+  val cellSize = 10
 
   // Ce timer va appeler la méthode Tick
   val tickTimer = new java.util.Timer()
@@ -14,6 +15,14 @@ object Main extends App {
   }
   tickTimer.schedule(task, 1000L, 1000L)
 
+  val foodTimer = new java.util.Timer()
+  val foodTask = new java.util.TimerTask {
+    def run() = {
+      generateFood()
+    }
+  }
+  foodTimer.schedule(foodTask, 2000L, 2000L)
+
   // une linkedList va nous permettre de stocker les noeuds du serpent chaque noeud
   // contient les coordonnées de la case d'un morceau du serpent et la prochaine case vers laquelle
   // le serpent doit se déplacer
@@ -22,17 +31,15 @@ object Main extends App {
 
   val f = new FunGraphics(800, 800)
   var gameRunning = false;
+
+
   // Faire une grille qui sépare l'écran en case d
   // chaque case est un carré de 10 pixels par 10 pixels
   // chaque case est un objet de la classe cell
-
-  // Define the size of the grid (number of rows and columns)
-  val rows: Int = f.width / 10
-  val cols: Int = f.height / 10
-
-  // Create a 2 dimension array of Cell objects
-  val grid = CellManager.createGrid(f.height, f.width, 10)
+  val grid = CellManager.createGrid(f.height, f.width, cellSize)
   start();
+
+
 
   private def start(): Unit = {
     // définir un point de départ random du serpent
@@ -47,6 +54,7 @@ object Main extends App {
 
     gameLoop();
     task.run()
+    foodTask.run()
 
   }
 
@@ -63,13 +71,22 @@ object Main extends App {
         // 1. Dessiner le serpent
         for (cell <- this.snake.nodes) {
           f.setColor(Color.BLACK)
-          f.drawFillRect(cell.xCoord, cell.yCoord, 10, 10)
+          f.drawFillRect(cell.xCoord, cell.yCoord, cellSize, cellSize )
         }
+        for(cell <- CellManager.getAllCells().filter(k => k.color == "Red"))
+        {
+          f.setColor(Color.RED)
+          f.drawFillRect(cell.x , cell.y , cellSize, cellSize)
+        }
+
+
       }
 
     }
   }
-  private def tick(): Unit = {}
+  private def tick(): Unit = {
+
+  }
 
   private def moveSnake(): Unit = {
     // Déplacer le serpent dans la prochaine case en fonction de la direction
@@ -82,6 +99,23 @@ object Main extends App {
   private def generateFood(): Unit = {
     // Générer de la nourriture aléatoirement sur la grille
     // La nourriture ne doit pas appraître sur le serpent
+    var a = CellManager.getAllCells()
+    var b : List[CellManager.Cell] = List()
+
+    for(cell <- a)
+      {
+        if(snake.nodes.filter(n=>n.xCoord == cell.x && n.yCoord == cell.y).length <= 0)
+          {
+            b = cell :: b // Ajoute un element a la liste.
+          }
+      }
+
+    var fruitCell = b(Random.nextInt(b.length))
+    fruitCell.color = "Red"
+
+
+
+
 
   }
 
