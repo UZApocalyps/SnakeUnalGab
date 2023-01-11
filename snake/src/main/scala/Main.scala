@@ -1,6 +1,7 @@
 import hevs.graphics.FunGraphics
 import linkedList.LinkedList
 import scala.util.Random
+import java.awt.Color
 object Main extends App {
   val direction = "I" // I = idle, L = gauche, D = bas, R = droit, U = haut
 
@@ -31,15 +32,20 @@ object Main extends App {
 
   // Create a 2 dimension array of Cell objects
   val grid = CellManager.createGrid(f.height, f.width, 10)
+  start();
 
   private def start(): Unit = {
     // définir un point de départ random du serpent
-    val random = new Random().nextInt(CellManager.getAllCells().length)
+    val randomLength = CellManager.getAllCells().length
+    val random = new Random().nextInt(randomLength)
 
     // case de début du serpent
     var startCell: CellManager.Cell = CellManager.getAllCells()(random);
 
-    gameRunning = true;
+    snake.addNode(startCell.x, startCell.y)
+    gameRunning = true; gameRunning = true;
+
+    gameLoop();
     task.run()
 
   }
@@ -51,13 +57,15 @@ object Main extends App {
 
   private def gameLoop(): Unit = {
     // Boucle principale du jeu
-
     while (gameRunning) {
-      // 1. Déplacer le serpent
-      // 2. Vérifier si le serpent est mort
-      // 3. Si le serpent est mort, arrêter le jeu
-      // 4. Sinon, continuer le jeu
-
+      f.frontBuffer.synchronized {
+        f.clear()
+        // 1. Dessiner le serpent
+        for (cell <- this.snake.nodes) {
+          f.setColor(Color.BLACK)
+          f.drawFillRect(cell.xCoord, cell.yCoord, 10, 10)
+        }
+      }
 
     }
   }
@@ -113,7 +121,7 @@ object CellManager {
         val cell = new Cell()
         cell.x = i
         cell.y = j
-        cells.appended(cell)
+        cells = cell :: cells
       }
     }
   }

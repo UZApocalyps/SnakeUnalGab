@@ -1,12 +1,11 @@
 package linkedList
 class LinkedList {
-  val nodes: List[Node] = List()
-  val head: Node = null
-  val tail: Node = null
+  var nodes: List[Node] = List()
+  var head: Node = null
+  var tail: Node = null
 
-  /**
-   * Déplace chaque noeud dans la case précédente
-  */
+  /** Déplace chaque noeud dans la case précédente
+    */
   def shift(): Unit = {
     for (node <- nodes) {
       node.xCoord = node.next.xCoord
@@ -17,16 +16,20 @@ class LinkedList {
     }
   }
 
-  /**
-   * Ajoute un noeud dans la liste
-  */
+  /** Ajoute un noeud dans la liste
+    */
   def addNode(xCoord: Int, yCoord: Int): Unit = {
     // Ajouter un noeud à la fin du serpent
     val newNode = new Node()
     newNode.xCoord = xCoord
     newNode.yCoord = yCoord
-    tail.next = newNode
-    nodes.appended(newNode)
+    if (tail != null) {
+      tail.next = newNode
+    } else {
+      tail = newNode
+      head = newNode
+    }
+    nodes = newNode :: nodes
   }
 }
 
