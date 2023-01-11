@@ -6,14 +6,30 @@ class LinkedList {
 
   /** Déplace chaque noeud dans la case précédente
     */
-  def shift(): Unit = {
-    for (node <- nodes) {
-      node.xCoord = node.next.xCoord
-      node.yCoord = node.next.yCoord
-      if (node.next != tail) {
-        node.next = node.next.next
+  def shift(xCoord: Int, yCoord: Int): Unit = {
+
+    try {
+// shift all nodes
+      var newnodesList: List[Node] = List()
+      val newHead = new Node()
+      this.head = newHead
+      newHead.xCoord = xCoord
+      newHead.yCoord = yCoord
+      newnodesList = newHead :: newnodesList
+      println(nodes.length)
+      val lengthOfNodes = nodes.length
+      for (i <- 0 until nodes.length - 1) {
+        nodes(i).xCoord = nodes(i + 1).xCoord
+        nodes(i).yCoord = nodes(i + 1).yCoord
+        newnodesList = nodes(i) :: newnodesList
       }
+      tail = newnodesList.last
+      nodes = newnodesList
+      println(newnodesList.length)
+    } catch {
+      case e: Exception => println("Exception caught: " + e);
     }
+
   }
 
   /** Ajoute un noeud dans la liste
