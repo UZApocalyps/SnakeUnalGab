@@ -1,20 +1,15 @@
 import hevs.graphics.FunGraphics
-import linkedList.LinkedList
 import scala.util.Random
 import java.awt.Color
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
+import hevs.graphics.utils.GraphicsBitmap
+
 object Main extends App {
   var direction = "I" // I = idle, L = gauche, D = bas, R = droit, U = haut
-  val cellSize = 50
+  val cellSize = 20
   val f = new FunGraphics(800, 800)
   val tickTimer = new java.util.Timer()
-  val task = new java.util.TimerTask {
-    def run() = {
-      tick()
-    }
-  }
-  tickTimer.schedule(task, 500L, 500L)
 
   val foodTimer = new java.util.Timer()
   val foodTask = new java.util.TimerTask {
@@ -27,10 +22,13 @@ object Main extends App {
   f.setKeyManager(
     new KeyAdapter() { // Will be called when a key has been pressed
       override def keyPressed(e: KeyEvent): Unit = {
-        if (e.getKeyCode == KeyEvent.VK_LEFT) direction = "L"
-        if (e.getKeyCode == KeyEvent.VK_RIGHT) direction = "R"
-        if (e.getKeyCode == KeyEvent.VK_UP) direction = "U"
-        if (e.getKeyCode == KeyEvent.VK_DOWN) direction = "D"
+        if (e.getKeyCode == KeyEvent.VK_LEFT && direction != "R")
+          direction = "L"
+        if (e.getKeyCode == KeyEvent.VK_RIGHT && direction != "L")
+          direction = "R"
+        if (e.getKeyCode == KeyEvent.VK_UP && direction != "D") direction = "U"
+        if (e.getKeyCode == KeyEvent.VK_DOWN && direction != "U")
+          direction = "D"
       }
     }
   )
@@ -38,7 +36,7 @@ object Main extends App {
   // contient les coordonnées de la case d'un morceau du serpent et la prochaine case vers laquelle
   // le serpent doit se déplacer
   // après chaque déplacement il faut utiliser la méthode shift() pour déplacer le serpent
-  val snake = new LinkedList()
+  var snake: LinkedList = new LinkedList()
 
   var gameRunning = false;
 
@@ -56,15 +54,13 @@ object Main extends App {
     // case de début du serpent
     var startCell: CellManager.Cell = CellManager.getAllCells()(random);
 
-    snake.addNode(startCell.x, startCell.y)
+    snake.addNodes(startCell);
     gameRunning = true;
-
-    gameLoop();
 
     // Ce timer va appeler la méthode Tick
 
-    task.run()
     foodTask.run()
+    gameLoop();
 
   }
 
@@ -76,20 +72,19 @@ object Main extends App {
   private def gameLoop(): Unit = {
     // Boucle principale du jeu
     while (gameRunning) {
-      Thread.sleep(300);
-      f.frontBuffer.synchronized {
-        f.clear()
-        // 1. Dessiner le serpent
-        for (cell <- this.snake.nodes) {
-          f.setColor(Color.BLACK)
-          f.drawFillRect(cell.xCoord, cell.yCoord, cellSize, cellSize)
-        }
-        for (cell <- CellManager.getAllCells().filter(k => k.color == "Red")) {
-          f.setColor(Color.RED)
-          f.drawFillRect(cell.x, cell.y, cellSize, cellSize)
-        }
-      }
+      clearWindow()
+      moveSnake()
 
+      // 1. Dessiner le serpent
+      for (cell <- snake.nodes) {
+        f.setColor(Color.BLACK)
+        f.drawFillRect(cell.x, cell.y, cellSize, cellSize)
+      }
+      for (cell <- CellManager.getAllCells().filter(k => k.color == "Red")) {
+        f.setColor(Color.RED)
+        f.drawFillRect(cell.x, cell.y, cellSize, cellSize)
+      }
+      Thread.sleep(500)
     }
   }
   private def tick(): Unit = {
@@ -98,33 +93,52 @@ object Main extends App {
 
   private def moveSnake(): Unit = {
     try {
-
       // Déplacer le serpent dans la prochaine case en fonction de la direction
       if (snake.nodes.length >= 1) {
         var nextCell = CellManager.nextCellByDirection(
-          CellManager
-            .getAllCells()
-            .find(c =>
-              c.x == snake.head.xCoord && c.y == snake.head.yCoord
-            )
-            .get,
+          snake.nodes(0),
           direction
         )
-        println(nextCell.x + " " + nextCell.y)
         if (nextCell != null) {
-          if (nextCell.color == "Red") {
-            nextCell.color = "Black"
-            snake.addNode(nextCell.x, nextCell.y)
+          if (snake.in(nextCell)) {
+            Lost();
+          } else {
+            if (nextCell.color == "Red") {
+              nextCell.color = "Black"
+              snake.addNodes(nextCell)
+            }
+            snake.addAtStart(nextCell)
+            snake.removeLast()
           }
-          snake.shift(nextCell.x, nextCell.y)
+
         }
+
       }
     } catch {
-      case e: Exception => println("error")
+      case e: Exception =>
+        println("error")
+        Lost()
     }
 
   }
+  private def clearWindow() {
+    for (c <- CellManager.getAllCells()) {
+      if (c.color == "Black") {
+        c.color = "white";
 
+      }
+    }
+    f.clear()
+  }
+  private def Lost(): Unit = {
+    // Afficher un message de défaite
+    // Arrêter le jeu
+    f.clear();
+    val bm = new GraphicsBitmap("/res/game_over.jpg")
+    f.drawPicture(0, 0, bm)
+    println("You lose !")
+    gameRunning = false;
+  }
   private def updateDirection(): Unit = {
     // Mettre à jour la direction du serpent en fonction des inputs du joueur
   }
@@ -138,7 +152,7 @@ object Main extends App {
     for (cell <- a) {
       if (
         snake.nodes
-          .filter(n => n.xCoord == cell.x && n.yCoord == cell.y)
+          .filter(n => n.x == cell.x && n.y == cell.y)
           .length <= 0
       ) {
         b = cell :: b // Ajoute un element a la liste.
@@ -232,4 +246,38 @@ object CellManager {
     cell.color = color
 
   }
+}
+
+class LinkedList {
+  var nodes: List[CellManager.Cell] = List();
+
+  def addNodes(cell: CellManager.Cell) = {
+    nodes = cell :: nodes
+  }
+
+  def removeLast() {
+    nodes = nodes.dropRight(1)
+  }
+
+  def addAtStart(cell: CellManager.Cell) {
+    var temporary: List[CellManager.Cell] = List()
+
+    for (i <- nodes.length - 1 to 0 by -1) {
+      temporary = nodes(i) :: temporary
+    }
+
+    temporary = cell :: temporary;
+
+    nodes = temporary
+  }
+
+  def in(cell: CellManager.Cell): Boolean = {
+    for (n <- nodes) {
+      if (n.x == cell.x && n.y == cell.y) {
+        return true;
+      }
+    }
+    return false
+  }
+
 }
