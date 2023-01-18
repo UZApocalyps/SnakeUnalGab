@@ -8,7 +8,7 @@ import hevs.graphics.utils.GraphicsBitmap
 object Main extends App {
   var direction = "I" // I = idle, L = gauche, D = bas, R = droit, U = haut
   val cellSize = 20
-  val f = new FunGraphics(800, 800)
+  val f = new FunGraphics(800, 800,"Snake Game")
   val tickTimer = new java.util.Timer()
 
   val foodTimer = new java.util.Timer()
@@ -129,6 +129,9 @@ object Main extends App {
       }
     }
     f.clear()
+    var br = new GraphicsBitmap("/res/br1.jpg")
+    f.drawPicture(f.width/2,f.height/2,br)
+
   }
   private def Lost(): Unit = {
     // Afficher un message de défaite
