@@ -4,7 +4,6 @@ import java.awt.Color
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
 import hevs.graphics.utils.GraphicsBitmap
-import com.sourcegraph.semanticdb_javac.Semanticdb.Constant
 
 /** Contient les paramètres de la partie
   */
