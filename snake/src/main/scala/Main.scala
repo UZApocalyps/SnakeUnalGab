@@ -1,20 +1,15 @@
 import hevs.graphics.FunGraphics
-import linkedList.LinkedList
 import scala.util.Random
 import java.awt.Color
-import java.awt.event.{KeyAdapter, KeyEvent}
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
+import hevs.graphics.utils.GraphicsBitmap
+
 object Main extends App {
   var direction = "I" // I = idle, L = gauche, D = bas, R = droit, U = haut
-  val cellSize = 10
-
-  // Ce timer va appeler la méthode Tick
+  val cellSize = 20
+  val f = new FunGraphics(800, 800)
   val tickTimer = new java.util.Timer()
-  val task = new java.util.TimerTask {
-    def run() = {
-      tick()
-    }
-  }
-  tickTimer.schedule(task, 1000L, 1000L)
 
   val foodTimer = new java.util.Timer()
   val foodTask = new java.util.TimerTask {
@@ -24,25 +19,33 @@ object Main extends App {
   }
   foodTimer.schedule(foodTask, 2000L, 2000L)
 
+  f.setKeyManager(
+    new KeyAdapter() { // Will be called when a key has been pressed
+      override def keyPressed(e: KeyEvent): Unit = {
+        if (e.getKeyCode == KeyEvent.VK_LEFT && direction != "R")
+          direction = "L"
+        if (e.getKeyCode == KeyEvent.VK_RIGHT && direction != "L")
+          direction = "R"
+        if (e.getKeyCode == KeyEvent.VK_UP && direction != "D") direction = "U"
+        if (e.getKeyCode == KeyEvent.VK_DOWN && direction != "U")
+          direction = "D"
+      }
+    }
+  )
   // une linkedList va nous permettre de stocker les noeuds du serpent chaque noeud
   // contient les coordonnées de la case d'un morceau du serpent et la prochaine case vers laquelle
   // le serpent doit se déplacer
   // après chaque déplacement il faut utiliser la méthode shift() pour déplacer le serpent
   val snake = new LinkedList()
 
-  val f = new FunGraphics(800, 800,"SNAKE GAME")
   var gameRunning = false;
-
-
 
   // Faire une grille qui sépare l'écran en case d
   // chaque case est un carré de 10 pixels par 10 pixels
   // chaque case est un objet de la classe cell
   val grid = CellManager.createGrid(f.height, f.width, cellSize)
+
   start();
-
-
-
   private def start(): Unit = {
     // définir un point de départ random du serpent
     val randomLength = CellManager.getAllCells().length
@@ -51,14 +54,13 @@ object Main extends App {
     // case de début du serpent
     var startCell: CellManager.Cell = CellManager.getAllCells()(random);
 
-    snake.addNode(startCell.x, startCell.y)
-    gameRunning = true; gameRunning = true;
+    snake.addNodes(startCell);
+    gameRunning = true;
 
-    gameLoop();
-    task.run()
+    // Ce timer va appeler la méthode Tick
+
     foodTask.run()
-    moveSnake()
-
+    gameLoop();
 
   }
 
@@ -70,43 +72,73 @@ object Main extends App {
   private def gameLoop(): Unit = {
     // Boucle principale du jeu
     while (gameRunning) {
-      f.frontBuffer.synchronized {
-        f.clear()
-        // 1. Dessiner le serpent
-        for (cell <- this.snake.nodes) {
-          f.setColor(Color.BLACK)
-          f.drawFillRect(cell.xCoord, cell.yCoord, cellSize, cellSize )
-        }
-        for(cell <- CellManager.getAllCells().filter(k => k.color == "Red"))
-        {
-          f.setColor(Color.RED)
-          f.drawFillRect(cell.x , cell.y , cellSize, cellSize)
-        }
+      clearWindow()
+      moveSnake()
 
-
+      // 1. Dessiner le serpent
+      for (cell <- snake.nodes) {
+        f.setColor(Color.BLACK)
+        f.drawFillRect(cell.x, cell.y, cellSize, cellSize)
       }
-
+      for (cell <- CellManager.getAllCells().filter(k => k.color == "Red")) {
+        f.setColor(Color.RED)
+        f.drawFillRect(cell.x, cell.y, cellSize, cellSize)
+      }
+      Thread.sleep(500)
     }
   }
   private def tick(): Unit = {
-
+    moveSnake();
   }
 
-    private def moveSnake(): Unit = {
-      f.setKeyManager(new KeyAdapter() {
-        override def keyPressed(e: KeyEvent): Unit = {
-          if (e.getKeyCode == KeyEvent.VK_LEFT) direction = "left"
-          if (e.getKeyCode == KeyEvent.VK_RIGHT) direction = "right"
-          if (e.getKeyCode == KeyEvent.VK_UP) direction = "up"
-          if (e.getKeyCode == KeyEvent.VK_DOWN) direction = "down"
+  private def moveSnake(): Unit = {
+    try {
+      // Déplacer le serpent dans la prochaine case en fonction de la direction
+      if (snake.nodes.length >= 1) {
+        var nextCell = CellManager.nextCellByDirection(
+          snake.nodes(0),
+          direction
+        )
+        if (nextCell != null) {
+          if (snake.in(nextCell)) {
+            Lost();
+          } else {
+            if (nextCell.color == "Red") {
+              nextCell.color = "Black"
+              snake.addNodes(nextCell)
+            }
+            snake.addAtStart(nextCell)
+            snake.removeLast()
+          }
+
         }
-      })
+
+      }
+    } catch {
+      case e: Exception =>
+        println("error")
+        Lost()
     }
 
+  }
+  private def clearWindow() {
+    for (c <- CellManager.getAllCells()) {
+      if (c.color == "Black") {
+        c.color = "white";
 
-
-
-
+      }
+    }
+    f.clear()
+  }
+  private def Lost(): Unit = {
+    // Afficher un message de défaite
+    // Arrêter le jeu
+    f.clear();
+    val bm = new GraphicsBitmap("/res/game_over.jpg")
+    f.drawPicture(0, 0, bm)
+    println("You lose !")
+    gameRunning = false;
+  }
   private def updateDirection(): Unit = {
     // Mettre à jour la direction du serpent en fonction des inputs du joueur
   }
@@ -115,22 +147,20 @@ object Main extends App {
     // Générer de la nourriture aléatoirement sur la grille
     // La nourriture ne doit pas appraître sur le serpent
     var a = CellManager.getAllCells()
-    var b : List[CellManager.Cell] = List()
+    var b: List[CellManager.Cell] = List()
 
-    for(cell <- a)
-      {
-        if(snake.nodes.filter(n=>n.xCoord == cell.x && n.yCoord == cell.y).length <= 0)
-          {
-            b = cell :: b // Ajoute un element a la liste.
-          }
+    for (cell <- a) {
+      if (
+        snake.nodes
+          .filter(n => n.x == cell.x && n.y == cell.y)
+          .length <= 0
+      ) {
+        b = cell :: b // Ajoute un element a la liste.
       }
+    }
 
     var fruitCell = b(Random.nextInt(b.length))
     fruitCell.color = "Red"
-
-
-
-
 
   }
 
@@ -165,8 +195,8 @@ object CellManager {
   def createGrid(windowHeight: Int, windowWidth: Int, cellSize: Int): Unit = {
     // Créer une grille de 80 cases par 80 cases
     this.cellSize = cellSize;
-    for (i <- cellSize to windowHeight) {
-      for (j <- cellSize to windowWidth) {
+    for (i <- 0 to windowHeight by cellSize) {
+      for (j <- 0 to windowWidth by cellSize) {
         val cell = new Cell()
         cell.x = i
         cell.y = j
@@ -193,7 +223,7 @@ object CellManager {
     var nextcell: Cell = null;
 
     direction match {
-      case "I" => nextcell = cell
+      case "I" => nextcell = null
       case "L" =>
         nextcell =
           cells.filter(c => c.x == cell.x - cellSize && c.y == cell.y).head
@@ -216,4 +246,38 @@ object CellManager {
     cell.color = color
 
   }
+}
+
+class LinkedList {
+  var nodes: List[CellManager.Cell] = List();
+
+  def addNodes(cell: CellManager.Cell) = {
+    nodes = cell :: nodes
+  }
+
+  def removeLast() {
+    nodes = nodes.dropRight(1)
+  }
+
+  def addAtStart(cell: CellManager.Cell) {
+    var temporary: List[CellManager.Cell] = List()
+
+    for (i <- nodes.length - 1 to 0 by -1) {
+      temporary = nodes(i) :: temporary
+    }
+
+    temporary = cell :: temporary;
+
+    nodes = temporary
+  }
+
+  def in(cell: CellManager.Cell): Boolean = {
+    for (n <- nodes) {
+      if (n.x == cell.x && n.y == cell.y) {
+        return true;
+      }
+    }
+    return false
+  }
+
 }

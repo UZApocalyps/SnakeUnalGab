@@ -1,3 +1,9 @@
+
+
+/**
+ * pas utilisé
+*/
+
 package linkedList
 class LinkedList {
   var nodes: List[Node] = List()
@@ -12,20 +18,26 @@ class LinkedList {
 // shift all nodes
       var newnodesList: List[Node] = List()
       val newHead = new Node()
-      this.head = newHead
+
       newHead.xCoord = xCoord
       newHead.yCoord = yCoord
+      newHead.next = null
+      head = newHead
       newnodesList = newHead :: newnodesList
-      println(nodes.length)
-      val lengthOfNodes = nodes.length
-      for (i <- 0 until nodes.length - 1) {
-        nodes(i).xCoord = nodes(i + 1).xCoord
-        nodes(i).yCoord = nodes(i + 1).yCoord
-        newnodesList = nodes(i) :: newnodesList
+      var len = if(nodes.length > 1) 2 else 1
+      if (nodes.length >= 1) {
+        for (i <- 0 to nodes.length - len) {
+          newnodesList = nodes(i) :: newnodesList
+          if(i == nodes.length-len)
+          {
+            tail = nodes(i)
+          }
+        }
+      } else {
+
       }
-      tail = newnodesList.last
       nodes = newnodesList
-      println(newnodesList.length)
+
     } catch {
       case e: Exception => println("Exception caught: " + e);
     }
