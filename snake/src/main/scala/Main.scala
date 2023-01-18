@@ -52,7 +52,7 @@ object Main extends App {
     val random = new Random().nextInt(randomLength)
 
     // case de début du serpent
-    var startCell: CellManager.Cell = CellManager.getAllCells()(random);
+    var startCell: CellManager.Cell = CellManager.getAllCells().find(c=> (c.x <= f.width/2 && c.x >= f.width / 2 - cellSize) && c.y <= f.height/2 && c.y >= f.height/2 - cellSize).get;
 
     snake.addNodes(startCell);
     gameRunning = true;
@@ -84,7 +84,7 @@ object Main extends App {
         f.setColor(Color.RED)
         f.drawFillRect(cell.x, cell.y, cellSize, cellSize)
       }
-      Thread.sleep(500)
+      Thread.sleep(1000/snake.nodes.length)
     }
   }
   private def tick(): Unit = {
@@ -135,7 +135,7 @@ object Main extends App {
     // Arrêter le jeu
     f.clear();
     val bm = new GraphicsBitmap("/res/game_over.jpg")
-    f.drawPicture(0, 0, bm)
+    f.drawPicture(f.width/2,f.height/2, bm)
     println("You lose !")
     gameRunning = false;
   }
